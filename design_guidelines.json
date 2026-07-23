@@ -1,0 +1,123 @@
+{
+  "theme_strategy": "Light Mode Preferred (Swiss & High-Contrast Archetype) - optimizes for dense financial data legibility and authority.",
+  "archetype": "ARCHETYPE 4: SWISS & HIGH-CONTRAST (Finance/Tech Variant)",
+  "typography": {
+    "headings": {
+      "font_family": "Chivo, sans-serif",
+      "strategy": "Used for all H1-H4. High authority, crisp and clean. Do NOT use Inter.",
+      "scales": {
+        "H1": "text-4xl sm:text-5xl font-black tracking-tighter",
+        "H2": "text-2xl sm:text-3xl font-bold tracking-tight",
+        "H3": "text-xl sm:text-2xl font-bold",
+        "H4": "text-lg sm:text-xl font-semibold"
+      }
+    },
+    "body": {
+      "font_family": "IBM Plex Sans, sans-serif",
+      "strategy": "Highly legible for dense tables, numbers, and lists.",
+      "scales": {
+        "base": "text-base leading-relaxed",
+        "small": "text-sm leading-normal",
+        "labels": "text-xs uppercase tracking-[0.2em] font-semibold text-muted-foreground"
+      }
+    }
+  },
+  "colors": {
+    "background": "#F8F9FA",
+    "surface": "#FFFFFF",
+    "foreground": "#0A0A0A",
+    "muted": "#E5E5E5",
+    "borders": "#D4D4D4",
+    "cashflow_positive": "#008A5E",
+    "cashflow_negative": "#D32F2F",
+    "primary_cta": "#0A0A0A",
+    "primary_cta_text": "#FFFFFF",
+    "forbidden_colors": ["#7351B7", "#1B93A4", "Any generic purple/blue gradients"]
+  },
+  "visual_enhancers": {
+    "surfaces": "Grid Borders Strategy: Flat solid surfaces, 1px subtle borders (border-border), no ambient shadows. Do NOT use glassmorphism on data-heavy areas.",
+    "shapes": "Very subtle roundness. max 4px (rounded-sm) to keep a sharp, financial aesthetic.",
+    "textures": "Minimal. High contrast between text and background. No 'AI slop' gradients.",
+    "icons": "Phosphor Icons (@phosphor-icons/react) for dense dashboard layouts."
+  },
+  "component_path": "/app/frontend/src/components/ui",
+  "component_name_mapping": {
+    "calendar": "Calendar (from shadcn/ui)",
+    "dropdown": "DropdownMenu (from shadcn/ui)",
+    "toast": "Sonner (from shadcn/ui) - ensure `<Toaster />` is included at the root level.",
+    "tabs": "Tabs (from shadcn/ui)",
+    "tables": "Table (from shadcn/ui)",
+    "inputs": "Input, Select, Checkbox (from shadcn/ui)",
+    "charts": "recharts or shadcn/ui chart component for analytics"
+  },
+  "grids": {
+    "dashboard_home": "High Density Grid (Bento Mode B). grid-cols-1 md:grid-cols-3 lg:grid-cols-4. gap-6.",
+    "widgets": {
+      "summary_cards": "col-span-1",
+      "main_chart": "col-span-2 lg:col-span-3 row-span-2",
+      "upcoming_payments": "col-span-1 row-span-2 (Tall narrow list)"
+    }
+  },
+  "layouts": {
+    "general": "Sidebar Navigation + Top Header + Main Content Area.",
+    "spacing": "Generous internal padding for containers (p-6 or p-8) despite the dense grid.",
+    "alignment": "Left-align dense content and numbers (or right-align numbers in tables for decimal alignment). Never center-align paragraphs or tables."
+  },
+  "motion": {
+    "interactions": "Hover states on all interactive elements (darken background, lift -translate-y-1).",
+    "transitions": "Use specific properties (transition-transform duration-200 ease-out). NO 'transition-all'.",
+    "loading": "Skeleton loaders (from shadcn) instead of generic spinners."
+  },
+  "accessibility": {
+    "contrast": "Strict WCAG AA minimum. Minimum 4.5:1 for text.",
+    "focus": "Clear focus rings (focus:ring-2 focus:ring-ring focus:ring-offset-2) for form elements.",
+    "aria": "Use proper aria-labels for icon-only buttons."
+  },
+  "media": {
+    "handling": "Images should not dominate the screen. Avatars and cover images should blend with the layout using strict aspect ratios."
+  },
+  "3d_libraries": {
+    "recommendation": "Not required. Use high-quality 2D charts (Recharts) for analytics. Do not overcomplicate with 3D in a financial cash flow app."
+  },
+  "image_urls": [
+    {
+      "category": "Login/Register Background",
+      "description": "Minimalist geometric architectural lines to convey stability, trust, and structure for the auth screen.",
+      "url": "https://images.pexels.com/photos/34764468/pexels-photo-34764468.jpeg"
+    },
+    {
+      "category": "User Profile Avatar",
+      "description": "Professional business avatar for user placeholder.",
+      "url": "https://images.pexels.com/photos/29852895/pexels-photo-29852895.jpeg"
+    }
+  ],
+  "turkish_terminology": {
+    "dashboard": "Özet / Yönetim Paneli",
+    "receivables": "Alacaklar",
+    "expenses": "Giderler",
+    "bank_accounts": "Banka Hesapları",
+    "credit_cards": "Kredi Kartları",
+    "upcoming_payments": "Yaklaşan Ödemeler",
+    "todo_list": "Yapılacaklar",
+    "currency_symbol": "₺",
+    "date_format": "DD/MM/YYYY (Turkish Locale)"
+  },
+  "UNIVERSAL GUIDELINES FOR MAIN AGENT": [
+    "You tend to converge toward generic, 'on distribution' outputs. In frontend design, this creates what users call the 'AI slop' aesthetic. Avoid this: make creative, distinctive frontends that surprise and delight.",
+    "Dark colors look good when used independently without gradients. DO NOT use dark colors as gradients.",
+    "Don't make generic centered layouts, simplistic gradients, and uniform styling.",
+    "Create depth through layered design elements with z-index hierarchy.",
+    "Use glass-morphism effects carefully, but NEVER use completely transparent backgrounds under overlays, dropdowns, or sticky headers.",
+    "You MUST NOT apply universal transition. Eg: transition: all. This results in breaking transforms. Always add transitions for specific interactive elements like button, input excluding transforms.",
+    "You MUST NOT center align the app container, ie do not add .App { text-align: center; } in the css file. This disrupts the human natural reading flow of text.",
+    "Always use modern button styles like pill-shaped, or sharp button with interaction animations & color relevant to the app style.",
+    "NEVER: use AI assistant Emoji characters like 🤖🧠💭💡🔮🎯 etc for icons. Use Phosphor Icons instead.",
+    "Every interaction needs micro-animations - hover states, transitions, and entrance animations. Static = dead.",
+    "Use 2-3x more spacing than feels comfortable. Cramped designs look cheap.",
+    "Subtle grain textures, noise overlays, custom cursors, selection states, and loading animations: separates good from extraordinary.",
+    "CRITICAL: The codebase uses .js and .jsx, NOT .tsx. All generated React code must be standard JSX/JS.",
+    "CRITICAL: All interactive and key informational elements MUST include a `data-testid` attribute (kebab-case, role-based) to facilitate robust automated testing.",
+    "CRITICAL: Shadcn components must have opinionated rules adjusted. (e.g. override tablist fixed height class `h-9` with `h-auto`).",
+    "Toasts: Use `sonner` for toasts. Component is located in `/app/frontend/src/components/ui/sonner.jsx`"
+  ]
+}
