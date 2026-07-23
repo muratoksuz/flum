@@ -25,6 +25,7 @@ from reminders import (
     collect_due_items_for_user, run_daily_reminders,
 )
 from rates import fetch_and_store_rates, get_cached_rates, convert_to_try
+from pdf_report import build_report_pdf
 
 # -------------------- Config --------------------
 JWT_ALGORITHM = "HS256"
@@ -712,6 +713,117 @@ async def rates_refresh(user: dict = Depends(get_current_user)):
         return await fetch_and_store_rates(db)
     except Exception as e:
         raise HTTPException(502, f"Kur alınamadı: {e}")
+
+
+# -------------------- Reports & Backup --------------------
+@api.get("/reports/pdf")
+async def report_pdf(user: dict = Depends(get_current_user)):
+    uid = user["id"]
+    receivables = await db.receivables.find({"user_id": uid}).sort("due_date", 1).to_list(2000)
+    expenses = await db.expenses.find({"user_id": uid}).sort("due_date", 1).to_list(2000)
+    banks = await db.bank_accounts.find({"user_id": uid}).to_list(500)
+    cards = await db.credit_cards.find({"user_id": uid}).to_list(500)
+    todos = await db.todos.find({"user_id": uid}).sort("created_at", -1).to_list(1000)
+    upcoming = await upcoming_payments(days=30, user=user)  # reuse endpoint fn
+    rates_doc = await get_cached_rates(db)
+
+    rates_to_try = await _rates_to_try(db)
+
+    def sum_try(items, key="amount"):
+        return sum(convert_to_try(i.get(key, 0), i.get("currency", "TRY"), rates_to_try) for i in items)
+
+    summary = {
+        "total_receivable_pending": sum_try([r for r in receivables if r.get("status") == "pending"]),
+        "total_expense_pending": sum_try([e for e in expenses if e.get("status") == "pending"]),
+        "total_bank_balance": sum_try(banks, key="balance"),
+        "total_card_debt": sum(c.get("current_debt", 0) for c in cards),
+        "total_card_limit": sum(c.get("credit_limit", 0) for c in cards),
+        "counts": {"receivables": len(receivables), "expenses": len(expenses)},
+    }
+    summary["net_position"] = (
+        summary["total_bank_balance"]
+        + summary["total_receivable_pending"]
+        - summary["total_expense_pending"]
+        - summary["total_card_debt"]
+    )
+
+    pdf_bytes = build_report_pdf(
+        user=user, summary=summary,
+        receivables=[clean_doc(x) for x in receivables],
+        expenses=[clean_doc(x) for x in expenses],
+        banks=[clean_doc(x) for x in banks],
+        cards=[clean_doc(x) for x in cards],
+        upcoming=upcoming, todos=[clean_doc(x) for x in todos],
+        rates=rates_doc,
+    )
+    filename = f"nakit-rapor-{now_utc().date().isoformat()}.pdf"
+    return Response(
+        content=pdf_bytes,
+        media_type="application/pdf",
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+    )
+
+
+@api.get("/backup/export")
+async def backup_export(user: dict = Depends(get_current_user)):
+    uid = user["id"]
+    collections = {
+        "receivables": db.receivables,
+        "expenses": db.expenses,
+        "bank_accounts": db.bank_accounts,
+        "credit_cards": db.credit_cards,
+        "todos": db.todos,
+    }
+    data = {}
+    for name, coll in collections.items():
+        items = await coll.find({"user_id": uid}).to_list(5000)
+        data[name] = [clean_doc(x) for x in items]
+    return {
+        "version": 1,
+        "exported_at": iso(now_utc()),
+        "user": {"email": user["email"], "name": user["name"]},
+        "data": data,
+    }
+
+
+class BackupImportPayload(BaseModel):
+    version: Optional[int] = 1
+    data: dict
+    replace: bool = False
+
+
+@api.post("/backup/import")
+async def backup_import(payload: BackupImportPayload, user: dict = Depends(get_current_user)):
+    uid = user["id"]
+    allowed = {
+        "receivables": db.receivables,
+        "expenses": db.expenses,
+        "bank_accounts": db.bank_accounts,
+        "credit_cards": db.credit_cards,
+        "todos": db.todos,
+    }
+    inserted = {}
+    for name, items in (payload.data or {}).items():
+        coll = allowed.get(name)
+        if coll is None or not isinstance(items, list):
+            continue
+        if payload.replace:
+            await coll.delete_many({"user_id": uid})
+        docs = []
+        for it in items:
+            if not isinstance(it, dict):
+                continue
+            doc = {k: v for k, v in it.items() if k not in {"_id", "user_id"}}
+            doc["user_id"] = uid
+            if "id" not in doc or not doc["id"]:
+                doc["id"] = new_id()
+            if "created_at" not in doc:
+                doc["created_at"] = iso(now_utc())
+            docs.append(doc)
+        if docs:
+            await coll.insert_many(docs)
+        inserted[name] = len(docs)
+    return {"ok": True, "inserted": inserted, "replace": payload.replace}
 
 
 app.include_router(api)

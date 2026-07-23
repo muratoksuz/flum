@@ -13,6 +13,8 @@ body {
   color: #0A0A0A;
 }
 
+html.dark body { background: #0A0A0B; color: #F5F5F5; }
+
 @layer base {
   :root {
     --background: 0 0% 98%;
@@ -35,6 +37,27 @@ body {
     --input: 0 0% 83%;
     --ring: 0 0% 4%;
     --radius: 0.25rem;
+  }
+  .dark {
+    --background: 0 0% 5%;
+    --foreground: 0 0% 96%;
+    --card: 0 0% 8%;
+    --card-foreground: 0 0% 96%;
+    --popover: 0 0% 10%;
+    --popover-foreground: 0 0% 96%;
+    --primary: 0 0% 96%;
+    --primary-foreground: 0 0% 8%;
+    --secondary: 0 0% 14%;
+    --secondary-foreground: 0 0% 96%;
+    --muted: 0 0% 14%;
+    --muted-foreground: 0 0% 60%;
+    --accent: 0 0% 14%;
+    --accent-foreground: 0 0% 96%;
+    --destructive: 0 60% 45%;
+    --destructive-foreground: 0 0% 96%;
+    --border: 0 0% 20%;
+    --input: 0 0% 20%;
+    --ring: 0 0% 96%;
   }
 }
 

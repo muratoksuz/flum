@@ -1,6 +1,7 @@
 import "@/App.css";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/context/AuthContext";
+import { ThemeProvider } from "@/context/ThemeContext";
 import { AppToaster } from "@/components/Bits";
 import Login from "@/pages/Login";
 import Register from "@/pages/Register";
@@ -13,6 +14,7 @@ import UpcomingPayments from "@/pages/UpcomingPayments";
 import Todos from "@/pages/Todos";
 import Notifications from "@/pages/Notifications";
 import Rates from "@/pages/Rates";
+import Settings from "@/pages/Settings";
 
 const Protected = ({ children }) => {
   const { user } = useAuth();
@@ -41,6 +43,7 @@ function AppRoutes() {
       <Route path="/yapilacaklar" element={<Protected><Todos /></Protected>} />
       <Route path="/bildirimler" element={<Protected><Notifications /></Protected>} />
       <Route path="/kurlar" element={<Protected><Rates /></Protected>} />
+      <Route path="/ayarlar" element={<Protected><Settings /></Protected>} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
@@ -50,13 +53,16 @@ function App() {
   return (
     <div className="App">
       <BrowserRouter>
-        <AuthProvider>
-          <AppRoutes />
-          <AppToaster />
-        </AuthProvider>
+        <ThemeProvider>
+          <AuthProvider>
+            <AppRoutes />
+            <AppToaster />
+          </AuthProvider>
+        </ThemeProvider>
       </BrowserRouter>
     </div>
   );
 }
 
 export default App;
+

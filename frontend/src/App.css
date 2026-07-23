@@ -1,4 +1,4 @@
-/* Nakit — Swiss high-contrast finance aesthetic */
+/* Nakit — Swiss high-contrast finance aesthetic (light + dark) */
 :root {
   --brand: #0A0A0A;
   --brand-ink: #FFFFFF;
@@ -12,12 +12,26 @@
   --muted: #737373;
 }
 
+html.dark {
+  --brand: #F5F5F5;
+  --brand-ink: #0A0A0A;
+  --pos: #34D399;
+  --neg: #F87171;
+  --warn: #FBBF24;
+  --surface: #141416;
+  --bg: #0A0A0B;
+  --grid: #1F1F22;
+  --border: #262629;
+  --muted: #9CA3AF;
+}
+
 .App {
   min-height: 100vh;
   background: var(--bg);
   color: #0A0A0A;
   font-family: "IBM Plex Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
 }
+html.dark .App { color: #F5F5F5; }
 
 .h-display,
 .h-display * {
@@ -30,12 +44,16 @@
   font-feature-settings: "tnum";
 }
 
-/* Subtle grid grain */
 .grid-bg {
   background-image:
     linear-gradient(to right, rgba(0,0,0,0.035) 1px, transparent 1px),
     linear-gradient(to bottom, rgba(0,0,0,0.035) 1px, transparent 1px);
   background-size: 32px 32px;
+}
+html.dark .grid-bg {
+  background-image:
+    linear-gradient(to right, rgba(255,255,255,0.04) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255,255,255,0.04) 1px, transparent 1px);
 }
 
 .card-flat {
@@ -54,6 +72,7 @@
   transition: background-color 200ms ease-out, transform 200ms ease-out;
 }
 .btn-primary:hover { background: #1f1f1f; }
+html.dark .btn-primary:hover { background: #E5E5E5; }
 .btn-primary:active { transform: translateY(1px); }
 
 .label-mini {
@@ -75,10 +94,13 @@
   font-weight: 500;
 }
 .nav-item:hover { background: #ECECEC; color: #0A0A0A; }
+html.dark .nav-item { color: #D4D4D4; }
+html.dark .nav-item:hover { background: #1E1E22; color: #FFFFFF; }
 .nav-item.active {
   background: #0A0A0A;
   color: #FFFFFF;
 }
+html.dark .nav-item.active { background: #F5F5F5; color: #0A0A0A; }
 
 .stat-value {
   font-family: "Chivo", sans-serif;
@@ -97,17 +119,55 @@
   font-weight: 600;
   border: 1px solid var(--border);
   background: #FAFAFA;
+  color: inherit;
 }
+html.dark .pill { background: #1B1B1F; }
 .pill-pos { color: var(--pos); border-color: rgba(0,138,94,0.3); background: rgba(0,138,94,0.08); }
 .pill-neg { color: var(--neg); border-color: rgba(211,47,47,0.3); background: rgba(211,47,47,0.08); }
 .pill-warn { color: var(--warn); border-color: rgba(180,83,9,0.3); background: rgba(180,83,9,0.08); }
+html.dark .pill-pos { color: #6EE7B7; background: rgba(52,211,153,0.08); border-color: rgba(52,211,153,0.3); }
+html.dark .pill-neg { color: #FCA5A5; background: rgba(248,113,113,0.08); border-color: rgba(248,113,113,0.3); }
+html.dark .pill-warn { color: #FCD34D; background: rgba(251,191,36,0.08); border-color: rgba(251,191,36,0.3); }
 
 .table-row:hover { background: #FAFAFA; }
+html.dark .table-row:hover { background: #1A1A1E; }
 
-.fade-in {
-  animation: fadeIn 260ms ease-out both;
-}
+.fade-in { animation: fadeIn 260ms ease-out both; }
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(6px); }
   to   { opacity: 1; transform: translateY(0); }
 }
+
+/* Dark-mode overrides for hard-coded utility colors used across pages */
+html.dark .bg-white { background: var(--surface) !important; }
+html.dark .bg-\[\#F8F9FA\] { background: var(--bg) !important; }
+html.dark .bg-\[\#FAFAFA\] { background: rgba(255,255,255,0.03) !important; }
+html.dark .bg-neutral-100 { background: rgba(255,255,255,0.06) !important; }
+html.dark .bg-neutral-900,
+html.dark .bg-neutral-950 { background: #F5F5F5 !important; color: #0A0A0A !important; }
+html.dark .bg-black { background: #F5F5F5 !important; color: #0A0A0A !important; }
+
+html.dark .border-\[\#D4D4D4\],
+html.dark .border-\[\#E5E5E5\],
+html.dark .border-\[\#F0F0F0\],
+html.dark .border-\[\#EFEFEF\] { border-color: var(--border) !important; }
+
+html.dark .text-neutral-500 { color: var(--muted) !important; }
+html.dark .text-neutral-600 { color: #A3A3A3 !important; }
+html.dark .text-neutral-800,
+html.dark .text-neutral-900 { color: #F5F5F5 !important; }
+
+html.dark .hover\:bg-neutral-100:hover { background: rgba(255,255,255,0.06) !important; }
+html.dark .hover\:bg-white:hover { background: rgba(255,255,255,0.04) !important; }
+html.dark .hover\:bg-neutral-50:hover { background: rgba(255,255,255,0.04) !important; }
+html.dark .divide-\[\#EFEFEF\] > :not([hidden]) ~ :not([hidden]) { border-color: var(--grid) !important; }
+html.dark .divide-\[\#F0F0F0\] > :not([hidden]) ~ :not([hidden]) { border-color: var(--grid) !important; }
+
+/* Auth pages always render on the dark hero image; force cards inside auth to stay adapted */
+html.dark .bg-\[\#E6F5EF\] { background: rgba(52,211,153,0.15) !important; color: #6EE7B7 !important; }
+html.dark .bg-\[\#FDECEC\] { background: rgba(248,113,113,0.15) !important; color: #FCA5A5 !important; }
+html.dark .bg-\[\#FCE8E8\] { background: rgba(248,113,113,0.15) !important; }
+html.dark .border-\[\#F5B5B5\] { border-color: rgba(248,113,113,0.35) !important; }
+html.dark .text-\[\#008A5E\] { color: #34D399 !important; }
+html.dark .text-\[\#D32F2F\] { color: #F87171 !important; }
+html.dark .text-\[\#B45309\] { color: #FBBF24 !important; }

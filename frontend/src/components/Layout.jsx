@@ -1,9 +1,14 @@
 import { NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
+import { useTheme } from "@/context/ThemeContext";
 import {
   ChartLineUp, HandCoins, Receipt, Bank, CreditCard,
   Calendar, CheckSquare, SignOut, Bell, CurrencyCircleDollar,
+  Gear, Sun, Moon,
 } from "@phosphor-icons/react";
+
+const LOGO_BLACK = "https://customer-assets-gfyr7b9c.emergentagent.net/job_finance-command-31/artifacts/ckdby44t_siyah.png";
+const LOGO_WHITE = "https://customer-assets-gfyr7b9c.emergentagent.net/job_finance-command-31/artifacts/dq56m5hm_beyaz.png";
 
 const nav = [
   { to: "/", label: "Özet", icon: ChartLineUp, testid: "nav-dashboard" },
@@ -15,10 +20,12 @@ const nav = [
   { to: "/yapilacaklar", label: "Yapılacaklar", icon: CheckSquare, testid: "nav-todos" },
   { to: "/kurlar", label: "Kurlar", icon: CurrencyCircleDollar, testid: "nav-rates" },
   { to: "/bildirimler", label: "Bildirimler", icon: Bell, testid: "nav-notifications" },
+  { to: "/ayarlar", label: "Ayarlar", icon: Gear, testid: "nav-settings" },
 ];
 
 export default function Layout({ children }) {
   const { user, logout } = useAuth();
+  const { theme, toggle } = useTheme();
   const navigate = useNavigate();
 
   const handleLogout = async () => {
@@ -32,7 +39,7 @@ export default function Layout({ children }) {
       <aside className="w-64 border-r border-[#D4D4D4] bg-white flex flex-col" data-testid="sidebar">
         <div className="px-6 py-6 border-b border-[#E5E5E5]">
           <img
-            src="https://customer-assets-gfyr7b9c.emergentagent.net/job_finance-command-31/artifacts/ckdby44t_siyah.png"
+            src={theme === "dark" ? LOGO_WHITE : LOGO_BLACK}
             alt="FLUM"
             className="h-6 w-auto"
             data-testid="brand-logo"
@@ -59,14 +66,25 @@ export default function Layout({ children }) {
               <div className="text-sm font-semibold truncate" data-testid="current-user-name">{user?.name || "Kullanıcı"}</div>
               <div className="text-xs text-neutral-500 truncate">{user?.email}</div>
             </div>
-            <button
-              onClick={handleLogout}
-              data-testid="logout-button"
-              className="p-2 rounded-sm hover:bg-neutral-100 transition-colors"
-              aria-label="Çıkış Yap"
-            >
-              <SignOut size={18} weight="bold" />
-            </button>
+            <div className="flex items-center gap-1">
+              <button
+                onClick={toggle}
+                data-testid="theme-toggle-button"
+                className="p-2 rounded-sm hover:bg-neutral-100 transition-colors"
+                aria-label={theme === "dark" ? "Aydınlık moda geç" : "Karanlık moda geç"}
+                title={theme === "dark" ? "Aydınlık mod" : "Karanlık mod"}
+              >
+                {theme === "dark" ? <Sun size={18} weight="bold" /> : <Moon size={18} weight="bold" />}
+              </button>
+              <button
+                onClick={handleLogout}
+                data-testid="logout-button"
+                className="p-2 rounded-sm hover:bg-neutral-100 transition-colors"
+                aria-label="Çıkış Yap"
+              >
+                <SignOut size={18} weight="bold" />
+              </button>
+            </div>
           </div>
         </div>
       </aside>
