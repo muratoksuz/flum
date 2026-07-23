@@ -36,13 +36,16 @@
 - ✅ Kur takibi (/kurlar) + dashboard ticker; APScheduler her 3 saatte bir günceller (fawazahmed0/currency-api CDN, key'siz)
 - ✅ Dashboard toplamları backend'de TRY karşılığına dönüştürülür
 - ✅ Testing agent iterasyon-2: backend 15/15, frontend 24/24
+- ✅ Karanlık tema (theme toggle) + FLUM logo tema-duyarlı
+- ✅ PDF nakit akış raporu (reportlab) — özet + kurlar + yaklaşan + tüm listeler
+- ✅ JSON yedekleme: dışa aktar / içe aktar (ekleme veya değiştirme modu)
+- ✅ Ayarlar sayfası (/ayarlar): tema, PDF, yedekleme tek noktada
+- ✅ Testing agent iterasyon-3: backend 24/24, frontend 100%
 
 ## Backlog (P1/P2)
 - P1: Yinelenen (recurring) giderler/alacaklar
-- P2: Karanlık tema
-- P2: PDF rapor / dashboard yazdırma
-- P2: Yedekleme / veri dışa alma (JSON tam)
-- P2: PUT partial-update desteği (mark as paid) — şu an frontend tam nesne gönderdiği için sorun yok
+- P2: PUT partial-update desteği (PATCH-style)
+- P3: server.py per-resource routerlara bölme (refactor)
 
 ## Test Credentials
 - admin@nakit.app / Admin1234!  (bkz. `/app/memory/test_credentials.md`)
