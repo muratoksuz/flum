@@ -8,6 +8,7 @@ import {
 } from "recharts";
 import { ArrowUpRight, ArrowDownRight, Bank, CreditCard, TrendUp } from "@phosphor-icons/react";
 import { Link } from "react-router-dom";
+import RatesTicker from "@/components/RatesTicker";
 
 const PIE_COLORS = ["#0A0A0A", "#008A5E", "#D32F2F", "#B45309", "#525252", "#737373", "#A3A3A3"];
 
@@ -36,6 +37,8 @@ export default function Dashboard() {
         title="Nakit Akışına Genel Bakış"
         testid="dashboard-header"
       />
+
+      <RatesTicker />
 
       {/* Stats grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">

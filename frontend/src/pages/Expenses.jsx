@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import Layout from "@/components/Layout";
 import { PageHeader } from "@/components/Bits";
 import { api, fmtTRY, fmtDate, todayISO, API_BASE, formatApiError } from "@/lib/apiClient";
+import { CURRENCIES, formatAmount } from "@/lib/currency";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -10,17 +11,21 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { toast } from "sonner";
 import { Plus, PencilSimple, Trash, DownloadSimple, Check } from "@phosphor-icons/react";
 
-const emptyForm = { payee: "", amount: "", due_date: todayISO(), category: "", note: "", status: "pending" };
+const emptyForm = { payee: "", amount: "", due_date: todayISO(), category: "", note: "", status: "pending", currency: "TRY" };
 const CATEGORIES = ["Kira", "Fatura", "Personel", "Vergi", "Malzeme", "Yiyecek", "Ulaşım", "Diğer"];
 
 export default function Expenses() {
   const [items, setItems] = useState([]);
+  const [rates, setRates] = useState({ TRY: 1 });
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState(null);
   const [form, setForm] = useState(emptyForm);
 
   const load = async () => setItems((await api.get("/expenses")).data);
-  useEffect(() => { load(); }, []);
+  useEffect(() => {
+    load();
+    api.get("/rates").then(({ data }) => setRates(data.rates_to_try || { TRY: 1 })).catch(() => {});
+  }, []);
 
   const openNew = () => { setEditing(null); setForm(emptyForm); setOpen(true); };
   const openEdit = (it) => { setEditing(it); setForm({ ...it, amount: String(it.amount) }); setOpen(true); };
@@ -46,7 +51,12 @@ export default function Expenses() {
     await load();
   };
 
-  const total = items.filter(i => i.status === "pending").reduce((s, i) => s + i.amount, 0);
+  const total = items
+    .filter(i => i.status === "pending")
+    .reduce((s, i) => {
+      const r = rates[i.currency || "TRY"];
+      return s + (r ? Number(i.amount || 0) * Number(r) : 0);
+    }, 0);
 
   return (
     <Layout>
@@ -76,13 +86,22 @@ export default function Expenses() {
                   </div>
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <Label className="label-mini">Tutar (₺)</Label>
+                      <Label className="label-mini">Tutar</Label>
                       <Input type="number" step="0.01" value={form.amount} onChange={(e) => setForm({ ...form, amount: e.target.value })} data-testid="expense-amount" className="mt-1.5 rounded-sm" />
                     </div>
                     <div>
-                      <Label className="label-mini">Vade Tarihi</Label>
-                      <Input type="date" value={form.due_date} onChange={(e) => setForm({ ...form, due_date: e.target.value })} data-testid="expense-due" className="mt-1.5 rounded-sm" />
+                      <Label className="label-mini">Para Birimi</Label>
+                      <Select value={form.currency} onValueChange={(v) => setForm({ ...form, currency: v })}>
+                        <SelectTrigger className="mt-1.5 rounded-sm bg-white" data-testid="expense-currency"><SelectValue /></SelectTrigger>
+                        <SelectContent className="bg-white">
+                          {CURRENCIES.map((c) => <SelectItem key={c.code} value={c.code}>{c.label}</SelectItem>)}
+                        </SelectContent>
+                      </Select>
                     </div>
+                  </div>
+                  <div>
+                    <Label className="label-mini">Vade Tarihi</Label>
+                    <Input type="date" value={form.due_date} onChange={(e) => setForm({ ...form, due_date: e.target.value })} data-testid="expense-due" className="mt-1.5 rounded-sm" />
                   </div>
                   <div>
                     <Label className="label-mini">Kategori</Label>
@@ -108,7 +127,7 @@ export default function Expenses() {
       />
 
       <div className="card-flat p-6 mb-6">
-        <div className="label-mini">Bekleyen Toplam</div>
+        <div className="label-mini">Bekleyen Toplam (₺ karşılığı)</div>
         <div className="stat-value text-3xl text-[#D32F2F] mt-2" data-testid="expenses-total">{fmtTRY(total)}</div>
       </div>
 
@@ -131,7 +150,7 @@ export default function Expenses() {
                 <td className="px-4 py-3 font-medium">{it.payee}</td>
                 <td className="px-4 py-3 text-neutral-600">{it.category || "-"}</td>
                 <td className="px-4 py-3 num">{fmtDate(it.due_date)}</td>
-                <td className="px-4 py-3 text-right num font-semibold">{fmtTRY(it.amount)}</td>
+                <td className="px-4 py-3 text-right num font-semibold" data-testid={`expense-amount-${it.id}`}>{formatAmount(it.amount, it.currency || "TRY")}</td>
                 <td className="px-4 py-3">
                   <button onClick={() => togglePaid(it)} className={`pill ${it.status === "paid" ? "pill-pos" : ""}`} data-testid={`toggle-expense-paid-${it.id}`}>
                     {it.status === "paid" ? <><Check size={12} weight="bold" /> Ödendi</> : "Bekliyor"}

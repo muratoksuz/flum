@@ -24,6 +24,7 @@ from reminders import (
     start_scheduler, shutdown_scheduler, send_email, build_reminder_html,
     collect_due_items_for_user, run_daily_reminders,
 )
+from rates import fetch_and_store_rates, get_cached_rates, convert_to_try
 
 # -------------------- Config --------------------
 JWT_ALGORITHM = "HS256"
@@ -139,6 +140,7 @@ class ReceivableIn(BaseModel):
     category: Optional[str] = None
     note: Optional[str] = None
     status: Literal["pending", "paid"] = "pending"
+    currency: str = "TRY"
 
 
 class ExpenseIn(BaseModel):
@@ -148,6 +150,7 @@ class ExpenseIn(BaseModel):
     category: Optional[str] = None
     note: Optional[str] = None
     status: Literal["pending", "paid"] = "pending"
+    currency: str = "TRY"
 
 
 class BankAccountIn(BaseModel):
@@ -422,6 +425,17 @@ async def delete_todo(item_id: str, user: dict = Depends(get_current_user)):
 
 
 # -------------------- Dashboard / Analytics / Upcoming / Export --------------------
+async def _rates_to_try(db) -> dict:
+    doc = await get_cached_rates(db)
+    if doc and doc.get("rates_to_try"):
+        return doc["rates_to_try"]
+    try:
+        fresh = await fetch_and_store_rates(db)
+        return fresh["rates_to_try"]
+    except Exception:
+        return {"TRY": 1.0, "USD": None, "EUR": None, "XAU": None, "XAG": None}
+
+
 @api.get("/dashboard/summary")
 async def dashboard_summary(user: dict = Depends(get_current_user)):
     uid = user["id"]
@@ -429,12 +443,16 @@ async def dashboard_summary(user: dict = Depends(get_current_user)):
     expenses = await db.expenses.find({"user_id": uid}).to_list(2000)
     banks = await db.bank_accounts.find({"user_id": uid}).to_list(500)
     cards = await db.credit_cards.find({"user_id": uid}).to_list(500)
+    rates = await _rates_to_try(db)
 
-    total_receivable_pending = sum(r["amount"] for r in receivables if r.get("status") == "pending")
-    total_receivable_paid = sum(r["amount"] for r in receivables if r.get("status") == "paid")
-    total_expense_pending = sum(e["amount"] for e in expenses if e.get("status") == "pending")
-    total_expense_paid = sum(e["amount"] for e in expenses if e.get("status") == "paid")
-    total_bank_balance = sum(b.get("balance", 0) for b in banks)
+    def sum_in_try(items, key="amount", cur_key="currency"):
+        return sum(convert_to_try(i.get(key, 0), i.get(cur_key, "TRY"), rates) for i in items)
+
+    total_receivable_pending = sum_in_try([r for r in receivables if r.get("status") == "pending"])
+    total_receivable_paid = sum_in_try([r for r in receivables if r.get("status") == "paid"])
+    total_expense_pending = sum_in_try([e for e in expenses if e.get("status") == "pending"])
+    total_expense_paid = sum_in_try([e for e in expenses if e.get("status") == "paid"])
+    total_bank_balance = sum_in_try(banks, key="balance")
     total_card_debt = sum(c.get("current_debt", 0) for c in cards)
     total_card_limit = sum(c.get("credit_limit", 0) for c in cards)
 
@@ -615,6 +633,12 @@ async def on_start():
     elif not verify_password(admin_password, existing["password_hash"]):
         await db.users.update_one({"email": admin_email}, {"$set": {"password_hash": hash_password(admin_password)}})
 
+    # Warm rates cache on startup (best-effort).
+    try:
+        await fetch_and_store_rates(db)
+    except Exception as e:
+        logger.warning(f"Rates warm-up failed: {e}")
+
     start_scheduler(db)
 
 
@@ -668,6 +692,26 @@ async def notif_send_test(user: dict = Depends(get_current_user)):
 @api.post("/notifications/run-now")
 async def notif_run_now(user: dict = Depends(get_current_user)):
     return await run_daily_reminders(db)
+
+
+# -------------------- Rates --------------------
+@api.get("/rates")
+async def rates_get(user: dict = Depends(get_current_user)):
+    doc = await get_cached_rates(db)
+    if not doc:
+        try:
+            doc = await fetch_and_store_rates(db)
+        except Exception as e:
+            raise HTTPException(502, f"Kur alınamadı: {e}")
+    return doc
+
+
+@api.post("/rates/refresh")
+async def rates_refresh(user: dict = Depends(get_current_user)):
+    try:
+        return await fetch_and_store_rates(db)
+    except Exception as e:
+        raise HTTPException(502, f"Kur alınamadı: {e}")
 
 
 app.include_router(api)

@@ -3,7 +3,6 @@ import { Navigate, Link } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Wallet } from "@phosphor-icons/react";
 
 export default function Register() {
   const { user, register, error } = useAuth();
@@ -32,15 +31,12 @@ export default function Register() {
         />
         <div className="absolute inset-0 bg-black/40" />
         <div className="relative h-full flex flex-col justify-between p-12 text-white">
-          <div className="flex items-center gap-3 h-display">
-            <div className="h-10 w-10 bg-white text-black flex items-center justify-center rounded-sm">
-              <Wallet size={22} weight="bold" />
-            </div>
-            <div>
-              <div className="text-2xl font-black tracking-tight leading-none">NAKİT</div>
-              <div className="text-[10px] uppercase tracking-[0.28em] mt-1 opacity-80">Akış Yönetimi</div>
-            </div>
-          </div>
+          <img
+            src="https://customer-assets-gfyr7b9c.emergentagent.net/job_finance-command-31/artifacts/dq56m5hm_beyaz.png"
+            alt="FLUM"
+            className="h-7 w-auto"
+            data-testid="brand-logo-auth"
+          />
           <div className="max-w-md">
             <div className="label-mini text-white/70 mb-3">Yeni hesap</div>
             <h1 className="h-display text-5xl font-black leading-[0.95] tracking-tighter">

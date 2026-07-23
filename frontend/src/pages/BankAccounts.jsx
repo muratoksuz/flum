@@ -2,9 +2,11 @@ import { useEffect, useState } from "react";
 import Layout from "@/components/Layout";
 import { PageHeader } from "@/components/Bits";
 import { api, fmtTRY, formatApiError } from "@/lib/apiClient";
+import { CURRENCIES, formatAmount } from "@/lib/currency";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { Plus, PencilSimple, Trash, Bank } from "@phosphor-icons/react";
 
@@ -12,12 +14,16 @@ const empty = { bank_name: "", account_name: "", iban: "", balance: 0, currency:
 
 export default function BankAccounts() {
   const [items, setItems] = useState([]);
+  const [rates, setRates] = useState({ TRY: 1 });
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState(null);
   const [form, setForm] = useState(empty);
 
   const load = async () => setItems((await api.get("/bank-accounts")).data);
-  useEffect(() => { load(); }, []);
+  useEffect(() => {
+    load();
+    api.get("/rates").then(({ data }) => setRates(data.rates_to_try || { TRY: 1 })).catch(() => {});
+  }, []);
 
   const save = async () => {
     try {
@@ -34,7 +40,10 @@ export default function BankAccounts() {
     await api.delete(`/bank-accounts/${id}`); await load();
   };
 
-  const total = items.reduce((s, i) => s + Number(i.balance || 0), 0);
+  const total = items.reduce((s, i) => {
+    const r = rates[i.currency || "TRY"];
+    return s + (r ? Number(i.balance || 0) * Number(r) : 0);
+  }, 0);
 
   return (
     <Layout>
@@ -57,7 +66,15 @@ export default function BankAccounts() {
                 <div><Label className="label-mini">IBAN</Label><Input value={form.iban || ""} onChange={(e) => setForm({ ...form, iban: e.target.value })} data-testid="bank-iban" className="mt-1.5 rounded-sm" /></div>
                 <div className="grid grid-cols-2 gap-3">
                   <div><Label className="label-mini">Bakiye</Label><Input type="number" step="0.01" value={form.balance} onChange={(e) => setForm({ ...form, balance: e.target.value })} data-testid="bank-balance" className="mt-1.5 rounded-sm" /></div>
-                  <div><Label className="label-mini">Para Birimi</Label><Input value={form.currency} onChange={(e) => setForm({ ...form, currency: e.target.value })} data-testid="bank-currency" className="mt-1.5 rounded-sm" /></div>
+                  <div>
+                    <Label className="label-mini">Para Birimi</Label>
+                    <Select value={form.currency} onValueChange={(v) => setForm({ ...form, currency: v })}>
+                      <SelectTrigger className="mt-1.5 rounded-sm bg-white" data-testid="bank-currency"><SelectValue /></SelectTrigger>
+                      <SelectContent className="bg-white">
+                        {CURRENCIES.map((c) => <SelectItem key={c.code} value={c.code}>{c.label}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
               </div>
               <DialogFooter><button onClick={save} className="btn-primary h-10 px-6" data-testid="bank-save">Kaydet</button></DialogFooter>
@@ -67,7 +84,7 @@ export default function BankAccounts() {
       />
 
       <div className="card-flat p-6 mb-6">
-        <div className="label-mini">Toplam Bakiye</div>
+        <div className="label-mini">Toplam Bakiye (₺ karşılığı)</div>
         <div className="stat-value text-3xl mt-2" data-testid="banks-total">{fmtTRY(total)}</div>
       </div>
 
@@ -88,7 +105,7 @@ export default function BankAccounts() {
               <div className="text-xs text-neutral-500 num mt-1">{it.iban || "IBAN yok"}</div>
             </div>
             <div className="mt-4 pt-4 border-t border-[#EFEFEF]">
-              <div className="stat-value text-2xl">{fmtTRY(it.balance)}</div>
+              <div className="stat-value text-2xl">{formatAmount(it.balance, it.currency || "TRY")}</div>
               <div className="text-xs text-neutral-500 mt-1">{it.currency}</div>
             </div>
           </div>

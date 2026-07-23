@@ -12,6 +12,7 @@ import CreditCards from "@/pages/CreditCards";
 import UpcomingPayments from "@/pages/UpcomingPayments";
 import Todos from "@/pages/Todos";
 import Notifications from "@/pages/Notifications";
+import Rates from "@/pages/Rates";
 
 const Protected = ({ children }) => {
   const { user } = useAuth();
@@ -39,6 +40,7 @@ function AppRoutes() {
       <Route path="/yaklasan" element={<Protected><UpcomingPayments /></Protected>} />
       <Route path="/yapilacaklar" element={<Protected><Todos /></Protected>} />
       <Route path="/bildirimler" element={<Protected><Notifications /></Protected>} />
+      <Route path="/kurlar" element={<Protected><Rates /></Protected>} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );

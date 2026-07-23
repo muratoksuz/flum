@@ -176,8 +176,14 @@ def start_scheduler(db):
         run_daily_reminders, CronTrigger(hour=hour, minute=0),
         args=[db], id="daily_reminders", replace_existing=True,
     )
+    # Refresh FX/metal rates every 3 hours.
+    from rates import fetch_and_store_rates
+    _scheduler.add_job(
+        fetch_and_store_rates, CronTrigger(minute=5, hour="*/3"),
+        args=[db], id="refresh_rates", replace_existing=True,
+    )
     _scheduler.start()
-    logger.info(f"Reminder scheduler started (daily at {hour:02d}:00 Europe/Istanbul)")
+    logger.info(f"Scheduler started (reminders at {hour:02d}:00, rates every 3h)")
     return _scheduler
 
 

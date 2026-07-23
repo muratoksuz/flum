@@ -1,0 +1,68 @@
+{
+  "summary": "Backend + frontend regression for FX/metals rate tracking, multi-currency support, and FLUM logo. 15/15 backend pytest pass including USD/EUR/XAU conversion accuracy on /api/dashboard/summary. Frontend: RatesTicker + /kurlar page + rate cards + refresh work, sidebar/auth logos render, receivable-currency and expense-currency selectors work. Found and FIXED one critical crash on /hesaplar (BankAccounts) due to missing Select/CURRENCIES/formatAmount imports.",
+  "tested_scope": ["backend", "frontend", "auth", "integration"],
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [
+      {
+        "component": "BankAccounts.jsx",
+        "issue": "FIXED — Missing imports of Select* + CURRENCIES + formatAmount caused ReferenceError: Select is not defined; page crashed with 'Uncaught runtime errors' overlay as soon as user navigated to /hesaplar. Bank creation modal, bank-currency selector and TRY-converted total were entirely inaccessible before fix.",
+        "selector": "[data-testid=\"bank-currency\"]",
+        "priority": "CRITICAL"
+      }
+    ],
+    "integration_issues": [],
+    "design_issues": [
+      {"screen": "Dashboard",
+       "issues": ["Recharts ResponsiveContainer width(-1)/height(-1) warning persists on initial mount (pre-existing, non-blocking)"]}
+    ]
+  },
+  "passed": [
+    "GET /api/rates returns cached rates with USD~47.21, EUR~53.85, XAU/g~6282, XAG/g~90 (all within sanity ranges)",
+    "GET /api/rates without auth returns 401",
+    "POST /api/rates/refresh re-fetches and updates cache; fetched_at present",
+    "POST /api/receivables with currency='USD' persists; dashboard total_receivable_pending increases by exactly amount * USD/TRY (within 2% tolerance)",
+    "POST /api/expenses with currency='EUR' persists; dashboard total_expense_pending reflects EUR/TRY conversion",
+    "POST /api/bank-accounts with currency='XAU' persists; dashboard total_bank_balance reflects XAU/g conversion",
+    "Regression: /api/dashboard/summary shape, /api/dashboard/upcoming, /api/analytics/monthly, /api/todos CRUD, /api/notifications/status, /api/export/receivables all 200",
+    "Frontend: brand-logo-auth (FLUM white) visible on Login and Register",
+    "Frontend: brand-logo (FLUM black) visible in sidebar",
+    "Frontend: rates-ticker on dashboard shows ticker-USD='₺47,21', ticker-EUR='₺53,85', ticker-XAU='₺6.282,67', ticker-XAG='₺90,94'",
+    "Clicking rates-ticker navigates to /kurlar",
+    "/kurlar shows rate-card-USD, -EUR, -XAU, -XAG, rates-header, rates-meta",
+    "refresh-rates-button on /kurlar triggers POST /api/rates/refresh and shows 'Kurlar güncellendi' toast",
+    "Sidebar nav-rates navigates to /kurlar (active state visible)",
+    "receivable-currency selector present with 5 options: TRY, USD, EUR, XAU (Altın gram), XAG (Gümüş gram)",
+    "expense-currency selector present in Expenses modal",
+    "bank-currency selector present in BankAccounts modal with 5 options (after fix)",
+    "Nav to /kartlar, /yaklasan, /yapilacaklar, /bildirimler all work"
+  ],
+  "test_report_links": [
+    "/app/backend/tests/backend_test.py",
+    "/app/test_reports/pytest/pytest_results.xml"
+  ],
+  "action_items": [
+    "OPTIONAL: PUT endpoints (receivables/expenses) still require full payload — a partial 'mark as paid' PUT would return 422. Same issue was flagged in iteration_1 and remains not fixed. Verify frontend paid-toggle sends the full body.",
+    "OPTIONAL: silence Recharts width/height warning on Dashboard by setting min-height on the container."
+  ],
+  "critical_code_review_comments": [
+    "BankAccounts.jsx was shipped with missing Select/CURRENCIES/formatAmount imports — clear indication that lint/type-checks aren't enforced on save. Recommend adding an ESLint rule 'react/jsx-no-undef' + 'no-undef' in CI to catch this class of regression.",
+    "server.py file (~720 lines) is approaching the split-file threshold; suggest breaking receivables/expenses/bank/cards/todos into per-resource routers.",
+    "rates.py uses synchronous 'requests' inside asyncio.to_thread — OK, but a native httpx.AsyncClient would be more idiomatic and cheaper.",
+    "convert_to_try silently returns 0.0 when rate missing for non-TRY currency — this can mask outages in the dashboard summary. Consider surfacing a 'stale_rates' flag in the summary response so the UI can warn."
+  ],
+  "updated_files": [
+    "/app/frontend/src/pages/BankAccounts.jsx (added missing imports of Select components, CURRENCIES, formatAmount)",
+    "/app/backend/tests/backend_test.py (new pytest suite: 15 tests)"
+  ],
+  "success_rate": {"backend": "100% (15/15)", "frontend": "100% after 1 fix (24/24)"},
+  "test_credentials": "admin@nakit.app / Admin1234! — verified working",
+  "seed_data_creation": "Test resources are prefixed with TEST_ and cleaned up in test_zzz_cleanup",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Rate provider (fawazahmed0 CDN) is reachable from the container. USD/EUR/XAU/XAG all populated. If /api/rates ever returns 502, tests skip gracefully instead of failing. Frontend BankAccounts page was broken pre-test; the fix has been applied — please spot-check after any refactor of the currency selector.",
+  "rca of the issue": "Root cause of /hesaplar crash: BankAccounts.jsx used <Select>, <SelectTrigger>, <SelectContent>, <SelectItem>, <SelectValue>, CURRENCIES and formatAmount without importing them. React threw ReferenceError: Select is not defined during render, showing the CRA runtime error overlay. Reproduction: log in as admin, click 'Banka Hesapları' — page crashed instantly. Mitigation: added the exact same imports already present in Receivables.jsx (Select components + CURRENCIES + formatAmount). Confirmed by re-navigating to /hesaplar (no crash), opening Yeni Hesap dialog, and enumerating 5 currency options in bank-currency."
+}

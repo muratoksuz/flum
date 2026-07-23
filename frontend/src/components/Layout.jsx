@@ -2,7 +2,7 @@ import { NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import {
   ChartLineUp, HandCoins, Receipt, Bank, CreditCard,
-  Calendar, CheckSquare, SignOut, Wallet, Bell,
+  Calendar, CheckSquare, SignOut, Bell, CurrencyCircleDollar,
 } from "@phosphor-icons/react";
 
 const nav = [
@@ -13,6 +13,7 @@ const nav = [
   { to: "/kartlar", label: "Kredi Kartları", icon: CreditCard, testid: "nav-cards" },
   { to: "/yaklasan", label: "Yaklaşan Ödemeler", icon: Calendar, testid: "nav-upcoming" },
   { to: "/yapilacaklar", label: "Yapılacaklar", icon: CheckSquare, testid: "nav-todos" },
+  { to: "/kurlar", label: "Kurlar", icon: CurrencyCircleDollar, testid: "nav-rates" },
   { to: "/bildirimler", label: "Bildirimler", icon: Bell, testid: "nav-notifications" },
 ];
 
@@ -29,14 +30,14 @@ export default function Layout({ children }) {
     <div className="min-h-screen flex bg-[#F8F9FA]" data-testid="app-shell">
       {/* Sidebar */}
       <aside className="w-64 border-r border-[#D4D4D4] bg-white flex flex-col" data-testid="sidebar">
-        <div className="px-6 py-6 border-b border-[#E5E5E5] flex items-center gap-2.5">
-          <div className="h-9 w-9 bg-black flex items-center justify-center rounded-sm">
-            <Wallet size={20} color="#fff" weight="bold" />
-          </div>
-          <div className="h-display">
-            <div className="text-lg font-black leading-none tracking-tight">NAKİT</div>
-            <div className="text-[10px] uppercase tracking-[0.28em] text-neutral-500 mt-1">Akış Yönetimi</div>
-          </div>
+        <div className="px-6 py-6 border-b border-[#E5E5E5]">
+          <img
+            src="https://customer-assets-gfyr7b9c.emergentagent.net/job_finance-command-31/artifacts/ckdby44t_siyah.png"
+            alt="FLUM"
+            className="h-6 w-auto"
+            data-testid="brand-logo"
+          />
+          <div className="text-[10px] uppercase tracking-[0.28em] text-neutral-500 mt-3">Nakit Akış Yönetimi</div>
         </div>
         <nav className="flex-1 px-3 py-4 space-y-0.5">
           {nav.map((it) => (
