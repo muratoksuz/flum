@@ -31,13 +31,18 @@
 - ✅ Testing agent: backend 95%, frontend 100%
 - ✅ Resend e-posta hatırlatıcıları + APScheduler günlük cron (09:00 Europe/Istanbul, vadeye 3 gün kala)
 - ✅ /bildirimler sayfası — durum, test gönder, manuel çalıştır
+- ✅ FLUM markalı logo entegrasyonu (giriş ekranı & sidebar)
+- ✅ Çoklu para birimi: USD, EUR, XAU (gram altın), XAG (gram gümüş), TRY — Receivables/Expenses/BankAccounts formlarında
+- ✅ Kur takibi (/kurlar) + dashboard ticker; APScheduler her 3 saatte bir günceller (fawazahmed0/currency-api CDN, key'siz)
+- ✅ Dashboard toplamları backend'de TRY karşılığına dönüştürülür
+- ✅ Testing agent iterasyon-2: backend 15/15, frontend 24/24
 
 ## Backlog (P1/P2)
 - P1: Yinelenen (recurring) giderler/alacaklar
-- P2: Çoklu para birimi + döviz kuru
 - P2: Karanlık tema
 - P2: PDF rapor / dashboard yazdırma
 - P2: Yedekleme / veri dışa alma (JSON tam)
+- P2: PUT partial-update desteği (mark as paid) — şu an frontend tam nesne gönderdiği için sorun yok
 
 ## Test Credentials
 - admin@nakit.app / Admin1234!  (bkz. `/app/memory/test_credentials.md`)
