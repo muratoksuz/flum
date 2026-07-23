@@ -20,6 +20,11 @@ from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
 from pydantic import BaseModel, Field, EmailStr, ConfigDict
 
+from reminders import (
+    start_scheduler, shutdown_scheduler, send_email, build_reminder_html,
+    collect_due_items_for_user, run_daily_reminders,
+)
+
 # -------------------- Config --------------------
 JWT_ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24  # 24h for convenience
@@ -610,15 +615,59 @@ async def on_start():
     elif not verify_password(admin_password, existing["password_hash"]):
         await db.users.update_one({"email": admin_email}, {"$set": {"password_hash": hash_password(admin_password)}})
 
+    start_scheduler(db)
+
 
 @app.on_event("shutdown")
 async def on_stop():
+    shutdown_scheduler()
     client.close()
 
 
 @api.get("/")
 async def root():
     return {"service": "nakit-cashflow", "ok": True}
+
+
+# -------------------- Notifications --------------------
+@api.get("/notifications/status")
+async def notif_status(user: dict = Depends(get_current_user)):
+    api_key = os.environ.get("RESEND_API_KEY", "").strip()
+    return {
+        "email_enabled": bool(api_key),
+        "sender_email": os.environ.get("SENDER_EMAIL", "onboarding@resend.dev"),
+        "reminder_days_before": int(os.environ.get("REMINDER_DAYS_BEFORE", "3")),
+        "reminder_hour": int(os.environ.get("REMINDER_HOUR", "9")),
+    }
+
+
+@api.post("/notifications/send-test")
+async def notif_send_test(user: dict = Depends(get_current_user)):
+    api_key = os.environ.get("RESEND_API_KEY", "").strip()
+    if not api_key:
+        raise HTTPException(400, "RESEND_API_KEY .env dosyasında tanımlı değil")
+    days_before = int(os.environ.get("REMINDER_DAYS_BEFORE", "3"))
+    items = await collect_due_items_for_user(db, user["id"], days_before)
+    if not items:
+        sample = [{
+            "type": "expense", "title": "Örnek Ödeme", "amount": 1250.0,
+            "due_date": date.today().isoformat(), "category": "Fatura", "days_left": 0,
+        }]
+        html = build_reminder_html(user["name"], sample)
+        subject = "Test hatırlatma — Nakit"
+    else:
+        html = build_reminder_html(user["name"], items)
+        subject = f"Yaklaşan {len(items)} ödeme — Nakit"
+    try:
+        res = await send_email(user["email"], subject, html)
+        return {"ok": True, "email": user["email"], "id": res.get("id"), "count": len(items)}
+    except Exception as e:
+        raise HTTPException(500, f"E-posta gönderilemedi: {e}")
+
+
+@api.post("/notifications/run-now")
+async def notif_run_now(user: dict = Depends(get_current_user)):
+    return await run_daily_reminders(db)
 
 
 app.include_router(api)

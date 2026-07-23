@@ -2,7 +2,7 @@ import { NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import {
   ChartLineUp, HandCoins, Receipt, Bank, CreditCard,
-  Calendar, CheckSquare, SignOut, Wallet,
+  Calendar, CheckSquare, SignOut, Wallet, Bell,
 } from "@phosphor-icons/react";
 
 const nav = [
@@ -13,6 +13,7 @@ const nav = [
   { to: "/kartlar", label: "Kredi Kartları", icon: CreditCard, testid: "nav-cards" },
   { to: "/yaklasan", label: "Yaklaşan Ödemeler", icon: Calendar, testid: "nav-upcoming" },
   { to: "/yapilacaklar", label: "Yapılacaklar", icon: CheckSquare, testid: "nav-todos" },
+  { to: "/bildirimler", label: "Bildirimler", icon: Bell, testid: "nav-notifications" },
 ];
 
 export default function Layout({ children }) {
