@@ -1,34 +1,113 @@
-.App-logo {
-    height: 40vmin;
-    pointer-events: none;
+/* Nakit — Swiss high-contrast finance aesthetic */
+:root {
+  --brand: #0A0A0A;
+  --brand-ink: #FFFFFF;
+  --pos: #008A5E;
+  --neg: #D32F2F;
+  --warn: #B45309;
+  --surface: #FFFFFF;
+  --bg: #F8F9FA;
+  --grid: #E5E5E5;
+  --border: #D4D4D4;
+  --muted: #737373;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-    .App-logo {
-        animation: App-logo-spin infinite 20s linear;
-    }
+.App {
+  min-height: 100vh;
+  background: var(--bg);
+  color: #0A0A0A;
+  font-family: "IBM Plex Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
 }
 
-.App-header {
-    background-color: #0f0f10;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    font-size: calc(10px + 2vmin);
-    color: white;
+.h-display,
+.h-display * {
+  font-family: "Chivo", ui-sans-serif, system-ui, sans-serif;
+  letter-spacing: -0.02em;
 }
 
-.App-link {
-    color: #61dafb;
+.num {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum";
 }
 
-@keyframes App-logo-spin {
-    from {
-        transform: rotate(0deg);
-    }
-    to {
-        transform: rotate(360deg);
-    }
+/* Subtle grid grain */
+.grid-bg {
+  background-image:
+    linear-gradient(to right, rgba(0,0,0,0.035) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(0,0,0,0.035) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+
+.card-flat {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+}
+
+.btn-primary {
+  background: var(--brand);
+  color: var(--brand-ink);
+  border-radius: 999px;
+  padding: 0.5rem 1.1rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  transition: background-color 200ms ease-out, transform 200ms ease-out;
+}
+.btn-primary:hover { background: #1f1f1f; }
+.btn-primary:active { transform: translateY(1px); }
+
+.label-mini {
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  font-size: 0.7rem;
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.6rem 0.85rem;
+  border-radius: 3px;
+  color: #262626;
+  transition: background-color 180ms ease-out, color 180ms ease-out;
+  font-weight: 500;
+}
+.nav-item:hover { background: #ECECEC; color: #0A0A0A; }
+.nav-item.active {
+  background: #0A0A0A;
+  color: #FFFFFF;
+}
+
+.stat-value {
+  font-family: "Chivo", sans-serif;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.15rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  border: 1px solid var(--border);
+  background: #FAFAFA;
+}
+.pill-pos { color: var(--pos); border-color: rgba(0,138,94,0.3); background: rgba(0,138,94,0.08); }
+.pill-neg { color: var(--neg); border-color: rgba(211,47,47,0.3); background: rgba(211,47,47,0.08); }
+.pill-warn { color: var(--warn); border-color: rgba(180,83,9,0.3); background: rgba(180,83,9,0.08); }
+
+.table-row:hover { background: #FAFAFA; }
+
+.fade-in {
+  animation: fadeIn 260ms ease-out both;
+}
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
 }

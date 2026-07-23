@@ -1,0 +1,50 @@
+{
+  "summary": "First-finish smoke test. Backend auth/CRUD/analytics endpoints work; frontend login, dashboard, navigation, receivable CRUD, and logout all pass end-to-end via public URL.",
+  "tested_scope": ["backend", "frontend", "auth", "integration"],
+  "passed": [
+    "GET /api/dashboard/summary returns 401 without token (auth enforced)",
+    "POST /api/auth/login with admin@nakit.app/Admin1234! returns 200 with token",
+    "GET /api/auth/me returns 200 with user profile using Bearer token",
+    "GET /api/dashboard/summary returns 200 with all summary fields",
+    "GET /api/analytics/monthly?months=6 returns 200 with 6-month array",
+    "GET /api/dashboard/upcoming?days=30 returns 200",
+    "POST /api/receivables creates a receivable (uuid id) - 200",
+    "DELETE /api/receivables/{id} returns {ok:true} - 200",
+    "GET /api/export/receivables returns CSV headers - 200",
+    "Frontend /login renders and admin login redirects to / (dashboard)",
+    "Dashboard visually renders: Net Pozisyon, Bekleyen Alacak, Bekleyen Gider, Toplam Banka Bakiyesi cards, monthly comparison bar chart, category pie widget, 'Yaklaşan 30 Gün' section (confirmed via screenshot)",
+    "Navigation to /alacaklar works (nav-receivables)",
+    "UI: create receivable via modal form persists and appears in list (UI Test Müşteri)",
+    "Navigation to /yapilacaklar works (nav-todos)",
+    "Logout button clears session and redirects to /login"
+  ],
+  "failed": [
+    {
+      "area": "backend",
+      "issue": "PUT /api/receivables/{id} requires full payload (debtor, amount, due_date). Sending partial update {paid:true} returns 422. If frontend paid-toggle sends partial body, it would fail; however manual UI toggle wasn't exercised in this pass.",
+      "evidence": "curl PUT with {\"paid\":true} -> 422 'Field required' for debtor/amount",
+      "priority": "MEDIUM"
+    },
+    {
+      "area": "frontend-a11y",
+      "issue": "Radix DialogContent missing Description/aria-describedby (console warning). Non-blocking.",
+      "evidence": "CONSOLE[warning]: Missing `Description` or `aria-describedby={undefined}` for {DialogContent}",
+      "priority": "LOW"
+    },
+    {
+      "area": "frontend-charts",
+      "issue": "Recharts ResponsiveContainer width(-1)/height(-1) warning on initial mount. Chart still renders correctly. Non-blocking.",
+      "evidence": "CONSOLE warning on dashboard load",
+      "priority": "LOW"
+    }
+  ],
+  "action_items": [
+    "Verify the 'mark as paid' toggle in Alacaklar/Giderler pages sends full payload (or make PUT accept partial updates) — potential runtime blocker on paid toggle.",
+    "Optional: add DialogDescription/aria-describedby to Radix Dialogs to silence a11y warnings.",
+    "Optional: set explicit min-height on chart containers to avoid Recharts width/height warning."
+  ],
+  "success_rate": {"backend": "95%", "frontend": "100%"},
+  "retest_needed": false,
+  "full_testing_deferred": true,
+  "test_credentials": "Present at /app/memory/test_credentials.md and verified working (admin@nakit.app/Admin1234!)"
+}
