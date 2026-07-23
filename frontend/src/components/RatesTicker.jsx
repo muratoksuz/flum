@@ -13,7 +13,9 @@ export default function RatesTicker() {
       try {
         const { data } = await api.get("/rates");
         setRates(data.rates_to_try || {});
-      } catch { /* silent */ }
+      } catch (err) {
+        console.warn("Rates ticker fetch failed:", err?.message || err);
+      }
     })();
   }, []);
 

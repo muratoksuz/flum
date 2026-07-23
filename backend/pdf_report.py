@@ -15,10 +15,11 @@ from reportlab.platypus import (
 def _fmt_amount(v, cur="TRY") -> str:
     try:
         n = float(v or 0)
-    except Exception:
+    except (TypeError, ValueError):
         return "-"
     tag = {"TRY": "₺", "USD": "$", "EUR": "€", "XAU": "gr Au", "XAG": "gr Ag"}.get(cur or "TRY", cur)
-    return f"{n:,.2f} {tag}".replace(",", "X").replace(".", ",").replace("X", ".")
+    formatted = f"{n:,.2f} {tag}"
+    return formatted.replace(",", "X").replace(".", ",").replace("X", ".")
 
 
 def _fmt_date(iso: str) -> str:

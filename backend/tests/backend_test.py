@@ -12,8 +12,8 @@ if not BASE_URL:
     m = re.search(r"REACT_APP_BACKEND_URL=(\S+)", env)
     BASE_URL = m.group(1).rstrip("/") if m else ""
 
-ADMIN_EMAIL = "admin@nakit.app"
-ADMIN_PASSWORD = "Admin1234!"
+ADMIN_EMAIL = os.environ.get("ADMIN_EMAIL", "admin@nakit.app")
+ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "Admin1234!")
 
 
 @pytest.fixture(scope="session")

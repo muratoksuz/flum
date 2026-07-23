@@ -11,7 +11,10 @@ export const AuthProvider = ({ children }) => {
     try {
       const { data } = await api.get("/auth/me");
       setUser(data);
-    } catch {
+    } catch (err) {
+      if (err?.response?.status && err.response.status !== 401) {
+        console.warn("Auth me check failed:", err.message);
+      }
       setUser(null);
     }
   }, []);
@@ -45,7 +48,11 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logout = async () => {
-    try { await api.post("/auth/logout"); } catch (_) { /* ignore */ }
+    try {
+      await api.post("/auth/logout");
+    } catch (err) {
+      console.warn("Logout request failed:", err?.message || err);
+    }
     setAuthToken(null);
     setUser(null);
   };

@@ -107,7 +107,7 @@ export default function Dashboard() {
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie data={byCat} dataKey="amount" nameKey="category" innerRadius={50} outerRadius={80} paddingAngle={2}>
-                    {byCat.map((_, i) => <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />)}
+                    {byCat.map((entry, i) => <Cell key={entry.category} fill={PIE_COLORS[i % PIE_COLORS.length]} />)}
                   </Pie>
                   <Tooltip formatter={(v) => fmtTRY(v)} />
                 </PieChart>

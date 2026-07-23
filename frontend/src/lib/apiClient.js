@@ -3,26 +3,21 @@ import axios from "axios";
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 export const API_BASE = `${BACKEND_URL}/api`;
 
+// Auth is primarily handled via httpOnly cookies (secure, samesite=none).
+// A short-lived in-memory token is kept as a fallback for the current tab session
+// only — it is NOT persisted to localStorage/sessionStorage (XSS surface).
 export const api = axios.create({
   baseURL: API_BASE,
   withCredentials: true,
 });
 
-let tokenMem = null;
-
 export const setAuthToken = (token) => {
-  tokenMem = token || null;
   if (token) {
     api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-    localStorage.setItem("nakit_token", token);
   } else {
     delete api.defaults.headers.common["Authorization"];
-    localStorage.removeItem("nakit_token");
   }
 };
-
-const stored = typeof window !== "undefined" ? localStorage.getItem("nakit_token") : null;
-if (stored) setAuthToken(stored);
 
 export const formatApiError = (err) => {
   const d = err?.response?.data?.detail;
